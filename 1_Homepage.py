@@ -1,15 +1,5 @@
 import streamlit as st
 
-# Hide Streamlit Menu and Footer
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
-
 st.set_page_config(
     page_title="Multipage App",
     page_icon="👋",
@@ -41,3 +31,13 @@ Our platform is specifically designed to optimize your dollar cost averaging str
 All in the name of building a brighter financial future, or whatever. Give it a try, I guess... 🤷‍♂️
 
 ''')
+
+# # Hide Streamlit Menu and Footer
+# hide_st_style = """
+#             <style>
+#             #MainMenu {visibility: hidden;}
+#             footer {visibility: hidden;}
+#             header {visibility: hidden;}
+#             </style>
+#             """
+# st.markdown(hide_st_style, unsafe_allow_html=True)
