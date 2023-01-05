@@ -18,8 +18,6 @@ from io import BytesIO
 import logging
 
 
-
-	
 # -------------- PAGE CONFIG --------------
 page_title = "Financial Portfolio Optimizer"
 page_icon = ":moneybag:"  # emojis: https://www.webfx.com/tools/emoji-cheat-sheet/

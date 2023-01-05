@@ -1,5 +1,15 @@
 import streamlit as st
 
+# Hide Streamlit Menu and Footer
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 st.header("Theory")
 st.write('''
 	Modern Portfolio Theory (MPT) is a framework for constructing investment portfolios that aims to maximize expected return 
