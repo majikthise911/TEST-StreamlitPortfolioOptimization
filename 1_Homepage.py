@@ -32,12 +32,12 @@ All in the name of building a brighter financial future, or whatever. Give it a 
 
 ''')
 
-# # Hide Streamlit Menu and Footer
-# hide_st_style = """
-#             <style>
-#             #MainMenu {visibility: hidden;}
-#             footer {visibility: hidden;}
-#             header {visibility: hidden;}
-#             </style>
-#             """
-# st.markdown(hide_st_style, unsafe_allow_html=True)
+# Hide Streamlit Menu and Footer
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
