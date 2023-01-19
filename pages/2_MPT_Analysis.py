@@ -7,6 +7,7 @@ from pypfopt import expected_returns
 from pypfopt import plotting
 import os
 import copy
+import openai
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -66,7 +67,8 @@ def plot_efficient_frontier_and_max_sharpe(mu, S): # mu is expected returns, S i
 	# Optimize portfolio for max Sharpe ratio and plot it out with efficient frontier curve
 	ef = EfficientFrontier(mu, S) # the efficient frontier object is 
 	fig, ax = plt.subplots(figsize=(6,4)) # fig, ax = plt.subplots() is the same as fig = plt.figure() and ax = fig.add_subplot(111)
-	ef_max_sharpe = ef.deepcopy() # there are different ways to do this, like copy.deepcopy(ef), but this other way breaks the code on cloud deployment
+	# ef_max_sharpe = ef.deepcopy() # there are different ways to do this, like copy.deepcopy(ef), but this other way breaks the code on cloud deployment
+	ef_max_sharpe = copy.deepcopy(ef) # this is the way to do it that works on cloud deployment
 	plotting.plot_efficient_frontier(ef, ax=ax, show_assets=False)
 	# Find the max sharpe portfolio
 	ef_max_sharpe.max_sharpe(risk_free_rate=0.02)
@@ -84,23 +86,25 @@ def plot_efficient_frontier_and_max_sharpe(mu, S): # mu is expected returns, S i
 	return fig
 
 # The code to get stock prices using yfinance is below and in a try/except block because it sometimes fails and we need to catch the error
+# the try block will try to run the code in the try block. If it fails, it will run the code in the except block
+# the except block will run if the code in the try block fails
 try:
 	# Get Stock Prices using pandas_datareader Library	
-	### stocks_df = DataReader(tickers, 'yahoo', start = start_date, end = end_date)['Adj Close']	
-	stocks_df = yf.download(tickers, start=start_date, end=end_date)['Adj Close']
-	# Plot Individual Stock Prices
+	### stocks_df = DataReader(tickers, 'yahoo', start = start_date, end = end_date)['Adj Close']	********************************
+	stocks_df = yf.download(tickers, start=start_date, end=end_date)['Adj Close'] 
+	# # Plot Individual Stock Prices
 	fig_price = px.line(stocks_df, title='Price of Individual Stocks')
-	# Plot Individual Cumulative Returns
+	# # Plot Individual Cumulative Returns
 	fig_cum_returns = plot_cum_returns(stocks_df, 'Cumulative Returns of Individual Stocks Starting with $100')
-	# Calculatge and Plot Correlation Matrix between Stocks
+	# # Calculatge and Plot Correlation Matrix between Stocks
 	corr_df = stocks_df.corr().round(2) # round to 2 decimal places
 	fig_corr = px.imshow(corr_df, text_auto=True, title = 'Correlation between Stocks')
 		
-	# Calculate expected returns and sample covariance matrix for portfolio optimization later
+	# # Calculate expected returns and sample covariance matrix for portfolio optimization later
 	mu = expected_returns.mean_historical_return(stocks_df)
 	S = risk_models.sample_cov(stocks_df)
 
-	# Plot efficient frontier curve
+	# # Plot efficient frontier curve
 	fig = plot_efficient_frontier_and_max_sharpe(mu, S)
 	fig_efficient_frontier = BytesIO()
 	fig.savefig(fig_efficient_frontier, format="png")
@@ -120,9 +124,9 @@ try:
 
 	# # Plot Cumulative Returns of Optimized Portfolio
 	fig_cum_returns_optimized = plot_cum_returns(stocks_df['Optimized Portfolio'], 'Cumulative Returns of Optimized Portfolio Starting with $100')
-# -------------- FUNCTIONS ----------------
+	# -------------- FUNCTIONS ----------------
 
-# -------------- STREAMLIT APP ------------
+	# -------------- STREAMLIT APP ------------
 	# # Display everything on Streamlit
 	st.subheader("Your Portfolio Consists of {} Stocks".format(tickers_string))	
 	st.plotly_chart(fig_cum_returns_optimized)
@@ -140,24 +144,55 @@ try:
 	st.plotly_chart(fig_corr) # fig_corr is not a plotly chart
 	st.plotly_chart(fig_price)
 	st.plotly_chart(fig_cum_returns)
-except:
 	st.write(logging.exception(''))
-	#st.write('Enter correct stock tickers to be included in portfolio separated\
-# by commas WITHOUT spaces, e.g. "MA,FB,V,AMZN,JPM,BA"and hit Enter.')	
+	###st.write('Enter correct stock tickers to be included in portfolio separated\
+	# by commas WITHOUT spaces, e.g. "MA,FB,V,AMZN,JPM,BA"and hit Enter.')	
 
-# Create a function to download the weights_df dataframe as a csv file using a button
-@st.cache # this is a decorator that caches the function so that it doesn't have to be rerun every time the app is run
-def convert_df(weights_df): # this function converts the weights_df dataframe to a csv file
-    # code to create or retrieve the weights_df dataframe goes here
-    return weights_df.to_csv().encode('utf-8')
-csv = convert_df(weights_df) # assign the output of the convert_df function to a variable called csv
+	# Create a function to download the weights_df dataframe as a csv file using a button
+	@st.cache # this is a decorator that caches the function so that it doesn't have to be rerun every time the app is run
+	def convert_df(weights_df): # this function converts the weights_df dataframe to a csv file
+	# code to create or retrieve the weights_df dataframe goes here
+		return weights_df.to_csv().encode('utf-8')
+	csv = convert_df(weights_df) # assign the output of the convert_df function to a variable called csv
 
-st.download_button( # this creates a download button
+	st.download_button( # this creates a download button
 	label="Download Optimized Weights as CSV",
 	data=csv,
 	file_name='weights_df.csv',
-	mime='text/csv'
+	mime='text/csv')
+except:
+	st.write(logging.exception(''))
+	###st.write('Enter correct stock tickers to be included in portfolio separated\********************************************
+# by commas WITHOUT spaces, e.g. "MA,FB,V,AMZN,JPM,BA"and hit Enter.')	
+#################################################################################################################################
+st.markdown('''# Report generated by Openai's GPT-3 API (give it a few seconds to load)''')
+# get the api key from the .env file
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Create the dataframe
+# fig_cum_returns_optimized = st.sidebar.selectbox("Dataframe", fig_cum_returns_optimized)
+# Call GPT-3 to generate summary
+prompt = f'''write a report on the {weights_df} dataframe. 
+Please provide your information using markdown labeled sub-headings and bullet points for each block of text.
+Explain the weights assigned to each asset and why they were assigned those weights. 
+Discuss the Sharpe ratio and correlation of the optimized portfolio.
+Compare the optimized portfolio to the S&P 500 and discuss the differences.
+Explain the expected returns, volatility, and best time horizon for the portfolio.
+'''
+response = openai.Completion.create(
+	model="text-davinci-003", 
+	prompt= prompt,
+	temperature=.7,
+	max_tokens=1000, # the tokens are the max number of words. 
+	top_p=1.0,
+	frequency_penalty=0.0,
+	presence_penalty=0.0
 )
+resp = (f"\n {response['choices'][0]['text']}")
+#st.markdown(f"## Summary of Optimized Portfolio \n {response['choices'][0]['text']}")
+st.markdown(resp)
+#################################################################################################################################
+
 # -------------- STREAMLIT APP ------------
 
 #------------------------TEST-------------------------
@@ -172,4 +207,4 @@ st.download_button( # this creates a download button
 # TODO: Add section to have GPT-3 generate a report on the portfolio
 # TODO: Add button to each graph that shows the code/math to generate the graph
 #		Maybe find a way to integrate chat bot to explain the math/code with the chat bot that 
-# 		I already built in streamlit 
+# 		I already built in streamlit
