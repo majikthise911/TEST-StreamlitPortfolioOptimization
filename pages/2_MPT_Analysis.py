@@ -18,6 +18,9 @@ from datetime import datetime
 from io import BytesIO
 import logging
 
+import pickle
+
+
 
 # -------------- PAGE CONFIG --------------
 page_title = "Financial Portfolio Optimizer"
@@ -68,7 +71,8 @@ def plot_efficient_frontier_and_max_sharpe(mu, S): # mu is expected returns, S i
 	ef = EfficientFrontier(mu, S) # the efficient frontier object is 
 	fig, ax = plt.subplots(figsize=(6,4)) # fig, ax = plt.subplots() is the same as fig = plt.figure() and ax = fig.add_subplot(111)
 	# ef_max_sharpe = ef.deepcopy() # there are different ways to do this, like copy.deepcopy(ef), but this other way breaks the code on cloud deployment
-	ef_max_sharpe = copy.deepcopy(ef) # this is the way to do it that works on cloud deployment
+	# ef_max_sharpe = copy.copy(ef) # this is the way to do it that works on cloud deployment
+	ef_max_sharpe = pickle.loads(pickle.dumps(ef))
 	plotting.plot_efficient_frontier(ef, ax=ax, show_assets=False)
 	# Find the max sharpe portfolio
 	ef_max_sharpe.max_sharpe(risk_free_rate=0.02)
