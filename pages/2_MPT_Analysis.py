@@ -70,9 +70,16 @@ def plot_efficient_frontier_and_max_sharpe(mu, S): # mu is expected returns, S i
 	# Optimize portfolio for max Sharpe ratio and plot it out with efficient frontier curve
 	ef = EfficientFrontier(mu, S) # the efficient frontier object is 
 	fig, ax = plt.subplots(figsize=(6,4)) # fig, ax = plt.subplots() is the same as fig = plt.figure() and ax = fig.add_subplot(111)
-	# ef_max_sharpe = ef.deepcopy() # there are different ways to do this, like copy.deepcopy(ef), but this other way breaks the code on cloud deployment
-	# ef_max_sharpe = copy.copy(ef) # this is the way to do it that works on cloud deployment
-	ef_max_sharpe = pickle.loads(pickle.dumps(ef))
+	ef_max_sharpe = pickle.loads(pickle.dumps(ef)) 	
+		# 1. Import the "pickle" module.
+		# 2. Serialize the "ef" object using "pickle.dumps".
+		# 3. Deserialize the serialized object using "pickle.loads".
+		# 4. Create a new object called "ef_max_sharpe" from the deserialized object.
+		# This method is useful when you want to make a duplicate of an object without 
+		# modifying the original object. It is also useful when you want to store an object in a file or send it over a network.
+		# original method was to use copy.deepcopy(ef) but this breaks the code on cloud deployment. Cloud does not support deepcopy of CVXPY expression 
+		# however we need to use deepcopy because the original object is modified when we call ef.max_sharpe() and we need to keep the original object intact
+		# so we use pickle.loads(pickle.dumps(ef)) to make a copy of the object
 	plotting.plot_efficient_frontier(ef, ax=ax, show_assets=False)
 	# Find the max sharpe portfolio
 	ef_max_sharpe.max_sharpe(risk_free_rate=0.02)
